@@ -8,6 +8,7 @@ Bun, TypeScript, NestJS, MikroORM, PostgreSQL, SQS (LocalStack), Docker Compose.
 ## Como rodar
 ```bash
 bun install
+cp .env.example .env
 docker compose up -d
 ```
 

@@ -22,6 +22,10 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
 
+    // Decorators (NestJS e MikroORM)
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
     // Some stricter flags (disabled by default)
     "noUnusedLocals": false,
     "noUnusedParameters": false,
