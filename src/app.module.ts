@@ -9,10 +9,11 @@ import { OpenWalletUseCase } from "./application/open-wallet.use-case";
 import { SubmitBetUseCase } from "./application/submit-bet.use-case";
 import { WalletsController } from "./presentation/http/wallets.controller";
 import { WageringController } from "./presentation/http/wagering.controller";
+import { HealthController } from "./presentation/http/health.controller";
 
 @Module({
   imports: [MikroOrmModule.forRoot(config)],
-  controllers: [WalletsController, WageringController],
+  controllers: [WalletsController, WageringController, HealthController],
   providers: [
     OpenWalletUseCase,
     SubmitBetUseCase,
