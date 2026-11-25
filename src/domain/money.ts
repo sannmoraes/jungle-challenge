@@ -10,6 +10,12 @@ export class Money {
     return new Money(cents, currency);
   }
 
+  static fromString(amount: string, currency: string): Money {
+    if (!/^\d+\.\d{2}$/.test(amount)) throw new Error("Invalid amount");
+        const [whole = "", fraction = ""] = amount.split(".");
+    return Money.fromCents(BigInt(whole + fraction), currency);
+  }  
+
   add(other: Money): Money {
     if (this.currency !== other.currency) throw new Error("Currency mismatch");
     return Money.fromCents(this.cents + other.cents, this.currency);
