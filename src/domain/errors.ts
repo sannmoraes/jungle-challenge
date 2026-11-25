@@ -14,3 +14,17 @@ export class InvalidInputError extends Error {
     this.name = "InvalidInputError";
   }
 }
+
+export class IdempotencyConflictError extends Error {
+  constructor(readonly key: string) {
+    super(`Idempotency key ${key} was already used with a different payload`);
+    this.name = "IdempotencyConflictError";
+  }
+}
+
+export class WalletNotFoundError extends Error {
+  constructor(readonly walletId: string) {
+    super(`Wallet ${walletId} not found`);
+    this.name = "WalletNotFoundError";
+  }
+}
