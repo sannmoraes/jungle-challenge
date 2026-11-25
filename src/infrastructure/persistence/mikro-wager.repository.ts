@@ -24,7 +24,7 @@ export class MikroWagerRepository extends WagerRepository {
              (id, provider_id, external_transaction_id, idempotency_key, payload_hash,
               wallet_id, player_id, round_id, game_id, kind, amount, currency, status)
            values (?, ?, ?, ?, ?, ?, ?, ?, ?, 'BET', ?, ?, 'PENDING')
-           on conflict (idempotency_key) do nothing
+           on conflict do nothing
            returning id`,
           [
             transactionId, cmd.providerId, cmd.externalTransactionId, cmd.idempotencyKey,
@@ -41,7 +41,10 @@ export class MikroWagerRepository extends WagerRepository {
               where idempotency_key = ?`,
             [cmd.idempotencyKey],
           );
-          const original = rows[0]!;
+          const original = rows[0];
+          if (original === undefined) {
+            throw new IdempotencyConflictError(cmd.idempotencyKey);
+          }
           if (original.payload_hash !== cmd.payloadHash) {
             throw new IdempotencyConflictError(cmd.idempotencyKey);
           }

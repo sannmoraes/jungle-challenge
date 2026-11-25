@@ -139,4 +139,63 @@ describe("POST /wagering/transactions (BET)", () => {
     expect(await count("wager_transactions")).toBe(1); // só o OPENING
   });
 
+  test("mesmo externalTransactionId com outra key: 409 e nada é debitado", async () => {
+    const walletId = await openWallet("100.00");
+
+    expect((await postBet(betBody(walletId, "25.00"), "provider-a:tx-1")).status).toBe(201);
+    const conflict = await postBet(betBody(walletId, "25.00"), "outra-key");
+
+    expect(conflict.status).toBe(409);
+    expect(await walletBalance(walletId)).toBe("75.00");
+    expect(await count("wager_transactions")).toBe(2); // OPENING + a 1ª BET
+  });
+
+});
+
+describe("concorrência", () => {
+  test("2 BETs de 80 simultâneas contra saldo 100: 1 PROCESSED, 1 REJECTED, saldo 20", async () => {
+    const walletId = await openWallet("100.00");
+
+    const responses = await Promise.all([
+      postBet(betBody(walletId, "80.00", "tx-a"), "provider-a:tx-a"),
+      postBet(betBody(walletId, "80.00", "tx-b"), "provider-a:tx-b"),
+    ]);
+    const bodies = await Promise.all(responses.map((r) => r.json() as Promise<{ status: string }>));
+
+    expect(bodies.map((b) => b.status).sort()).toEqual(["PROCESSED", "REJECTED"]);
+    expect(responses.map((r) => r.status).sort()).toEqual([201, 422]);
+    expect(await walletBalance(walletId)).toBe("20.00");
+
+    const debits = await em.fork().execute(
+      "select count(*)::int as n from wallet_ledger_entries where direction = 'DEBIT'",
+    );
+    expect(debits[0]!.n).toBe(1);
+  });
+
+  test("50 requisições paralelas idênticas: 1 débito, todas com o mesmo resultado", async () => {
+    const walletId = await openWallet("100.00");
+    const body = betBody(walletId, "10.00", "tx-same");
+
+    const responses = await Promise.all(
+      Array.from({ length: 50 }, () => postBet(body, "provider-a:tx-same")),
+    );
+    const bodies = await Promise.all(
+      responses.map(
+        (r) => r.json() as Promise<{ transactionId: string; status: string; balance: { amount: string } }>,
+      ),
+    );
+
+    const statuses = responses.map((r) => r.status);
+    expect(statuses.filter((s) => s === 201)).toHaveLength(1);
+    expect(statuses.filter((s) => s === 200)).toHaveLength(49);
+    expect(new Set(bodies.map((b) => b.transactionId)).size).toBe(1);
+    expect(bodies.every((b) => b.status === "PROCESSED" && b.balance.amount === "90.00")).toBe(true);
+
+    expect(await walletBalance(walletId)).toBe("90.00");
+    const debits = await em.fork().execute(
+      "select count(*)::int as n from wallet_ledger_entries where direction = 'DEBIT'",
+    );
+    expect(debits[0]!.n).toBe(1);
+    expect(await count("wager_transactions")).toBe(2); // OPENING + uma BET
+  });
 });
