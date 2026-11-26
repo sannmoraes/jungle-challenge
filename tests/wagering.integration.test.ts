@@ -160,6 +160,18 @@ describe("POST /wagering/transactions (BET)", () => {
     expect(await walletBalance(walletId)).toBe("100.00");
     expect(await count("wallet_ledger_entries")).toBe(1); // só o OPENING
   });
+
+  test("BET em moeda diferente da wallet: 422 CURRENCY_MISMATCH e nada é debitado", async () => {
+    const walletId = await openWallet("100.00");
+    const body = { ...betBody(walletId, "25.00"), money: { amount: "25.00", currency: "USD" } };
+
+    const response = await postBet(body);
+
+    expect(response.status).toBe(422);
+    expect(((await response.json()) as { failureCode: string }).failureCode).toBe("CURRENCY_MISMATCH");
+    expect(await walletBalance(walletId)).toBe("100.00");
+    expect(await count("wallet_ledger_entries")).toBe(1); // só o OPENING
+  });
 });
 
 describe("concorrência", () => {
