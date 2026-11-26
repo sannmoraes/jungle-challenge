@@ -1,4 +1,4 @@
-# Distributed Wagering Processor
+# Desafio Jungle Gaming
 
 Serviço de carteira (wallet) que recebe apostas de provedores de jogos por HTTP e atualiza o saldo do jogador sem debitar a mesma aposta duas vezes nem deixar o saldo negativo, mesmo com requisições repetidas ou simultâneas.
 
