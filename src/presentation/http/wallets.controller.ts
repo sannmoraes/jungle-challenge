@@ -1,4 +1,5 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Query, UseFilters } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, Param, Post, Query, UseFilters, UseGuards } from "@nestjs/common";
+import { AuthGuard } from "./auth.guard";
 import { OpenWalletUseCase } from "../../application/open-wallet.use-case";
 import { GetWalletUseCase } from "../../application/get-wallet.use-case";
 import { GetLedgerUseCase } from "../../application/get-ledger.use-case";
@@ -16,6 +17,7 @@ function toResponse(wallet: Wallet) {
 }
 
 @Controller("wallets")
+@UseGuards(AuthGuard)
 @UseFilters(DomainExceptionFilter)
 export class WalletsController {
   constructor(

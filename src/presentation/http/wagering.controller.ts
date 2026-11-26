@@ -1,4 +1,5 @@
-import { Body, Controller, Headers, Logger, Post, Res, UseFilters } from "@nestjs/common";
+import { Body, Controller, Headers, Logger, Post, Res, UseFilters, UseGuards } from "@nestjs/common";
+import { AuthGuard } from "./auth.guard";
 import { randomUUID } from "node:crypto";
 import { SubmitBetUseCase } from "../../application/submit-bet.use-case";
 import { DomainExceptionFilter } from "./domain-exception.filter";
@@ -7,6 +8,7 @@ import { parseSubmitBetRequest } from "./submit-bet.request";
 type StatusResponse = { status(code: number): unknown };
 
 @Controller("wagering/transactions")
+@UseGuards(AuthGuard)
 @UseFilters(DomainExceptionFilter)
 export class WageringController {
   private readonly logger = new Logger(WageringController.name);
