@@ -85,8 +85,9 @@ export class MikroWagerRepository extends WagerRepository {
         const balanceAfter = debited[0]!.balance as string;
         await tx.execute(
           `insert into wallet_ledger_entries
-             (id, wallet_id, transaction_id, direction, amount, balance_before, balance_after)
-           values (?, ?, ?, 'DEBIT', ?, ?::numeric + ?::numeric, ?)`,
+             (id, wallet_id, transaction_id, direction, amount, balance_before, balance_after, created_at)
+           values (?, ?, ?, 'DEBIT', ?, ?::numeric + ?::numeric, ?,
+            clock_timestamp())`,
           [crypto.randomUUID(), cmd.walletId, transactionId, cmd.amount, balanceAfter, cmd.amount, balanceAfter],
         );
         await tx.execute(

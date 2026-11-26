@@ -1,6 +1,7 @@
 import { Money } from "./money";
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export class Wallet {
   private constructor(
@@ -13,5 +14,9 @@ export class Wallet {
   static open(id: string, playerId: string, initialBalance: Money): Wallet {
     if (!UUID.test(playerId)) throw new Error("Invalid playerId");
     return new Wallet(id, playerId, initialBalance, 1);
+  }
+
+  static rehydrate(id: string, playerId: string, balance: Money, version: number): Wallet {
+    return new Wallet(id, playerId, balance, version);
   }
 }
