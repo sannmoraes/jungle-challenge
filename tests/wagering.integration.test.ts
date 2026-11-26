@@ -149,7 +149,17 @@ describe("POST /wagering/transactions (BET)", () => {
     expect(await walletBalance(walletId)).toBe("75.00");
     expect(await count("wager_transactions")).toBe(2); // OPENING + a 1ª BET
   });
+  test("BET com playerId de outro jogador: 422 PLAYER_MISMATCH e nada é debitado", async () => {
+    const walletId = await openWallet("100.00");
+    const body = { ...betBody(walletId, "25.00"), playerId: "11111111-1111-1111-1111-111111111111" };
 
+    const response = await postBet(body);
+
+    expect(response.status).toBe(422);
+    expect(((await response.json()) as { failureCode: string }).failureCode).toBe("PLAYER_MISMATCH");
+    expect(await walletBalance(walletId)).toBe("100.00");
+    expect(await count("wallet_ledger_entries")).toBe(1); // só o OPENING
+  });
 });
 
 describe("concorrência", () => {

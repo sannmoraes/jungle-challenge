@@ -64,9 +64,9 @@ export class MikroWagerRepository extends WagerRepository {
         const debited = await tx.execute(
           `update wallets
               set balance = balance - ?, version = version + 1, updated_at = now()
-            where id = ? and currency = ? and balance >= ?
+            where id = ? and player_id = ? and currency = ? and balance >= ?
             returning balance::text as balance`,
-          [cmd.amount, cmd.walletId, cmd.currency, cmd.amount],
+          [cmd.amount, cmd.walletId, cmd.playerId, cmd.currency, cmd.amount],
         );
 
         // 4. 0 linhas: não debitou. Rejeita com o motivo.
@@ -113,7 +113,12 @@ export class MikroWagerRepository extends WagerRepository {
   }
 
   private async rejectionReason(tx: EntityManager, cmd: ProcessBetCommand): Promise<string> {
-    const rows = await tx.execute("select currency from wallets where id = ?", [cmd.walletId]);
-    return rows[0]!.currency === cmd.currency ? "INSUFFICIENT_FUNDS" : "CURRENCY_MISMATCH";
+    const rows = await tx.execute(
+      "select player_id = ?::uuid as same_player, currency from wallets where id = ?",
+      [cmd.playerId, cmd.walletId],
+    );
+    const wallet = rows[0]!;
+    if (!wallet.same_player) return "PLAYER_MISMATCH";
+    return wallet.currency === cmd.currency ? "INSUFFICIENT_FUNDS" : "CURRENCY_MISMATCH";
   }
 }
