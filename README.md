@@ -159,7 +159,7 @@ Priorizei a correção do saldo, a concorrência e a idempotência da aposta; os
 ### Modelagem
 - Não há classes `WagerTransaction`, `LedgerEntry`, `Inbox` e `Outbox`: transações e lançamentos existem só como tabelas e SQL; inbox e outbox não existem.
 - `Wallet` não tem `debit`/`credit`: a regra do saldo está no SQL.
-- As transições de estado da transação não estão documentadas. 
+- As transições de estado estão descritas no [ARCHITECTURE.md](ARCHITECTURE.md), mas não são validadas por código nem pelo banco. 
 
 ### Autenticação
 - Não há autenticação. O `AuthGuard` aplicado nas rotas de wallets e apostas libera todas as requisições: quem alcança a API pode abrir wallet, consultar saldo e apostar. Ele é só o ponto de extensão; o desenho está em [ARCHITECTURE.md](ARCHITECTURE.md).
